@@ -1,0 +1,6 @@
+[submodule "rocket-chip"]
+	path = rocket-chip
+	url = https://github.com/chipsalliance/rocket-chip.git
+[submodule "firrtl"]
+	path = firrtl
+	url = git@github.com:freechipsproject/firrtl.git
