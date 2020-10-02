@@ -1,7 +1,7 @@
 .PHONY = regression gen_test_class invididual_tests cpu_verilog gen_test_class
 
-cpu_run:
-	sbt 'testOnly cpu.Tester -- -z Basic'
+all:
+	sbt 'runMain cpu.CpuTop'
 
 gen_test_class:
 	$(MAKE) -C tests/riscv-tests/isa
@@ -13,6 +13,8 @@ CONFIG_FIR ?= $(PROJECT).$(CONFIG).fir
 
 JAVA_HEAP_SIZE ?= 8G
 JAVA_ARGS ?= -Xmx$(JAVA_HEAP_SIZE) -Xss8M -XX:MaxPermSize=256M
+
+export JAVA_ARGS
 
 include Makefrag-verilator
 
@@ -34,7 +36,7 @@ TestHarness.sv: CONFIG_FIR
 	./firrtl/utils/bin/firrtl -td . -i $(PROJECT).$(CONFIG).fir -X sverilog
 
 CONFIG_FIR:
-	$(JAVA_ARGS) sbt -mem 2048 'runMain $(PROJECT).Generator . $(PROJECT) TestHarness $(PROJECT) $(CONFIG)'
+	sbt -mem 2048 'runMain $(PROJECT).Generator . $(PROJECT) TestHarness $(PROJECT) $(CONFIG)'
 
 clean:
 	$(RM) -rf test_run_dir target *.v *.fir *.json *.log generated-src-debug *.sv
