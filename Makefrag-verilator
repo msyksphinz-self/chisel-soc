@@ -1,7 +1,7 @@
 long_name = $(PROJECT).$(CONFIG)
 long_name_fir = $(long_name).fir
 
-VERILATOR := rocketchip/emulator/verilator/install/bin/verilator --cc --exe
+VERILATOR := verilator --cc --exe
 VERILATOR_THREADS ?= 4
 
 CXX ?= g++
