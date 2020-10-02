@@ -32,10 +32,10 @@ tilelink-xml: TestHarness.sv
 	-o $(abspath $(sim_dir))/$@ $(verilog) $(cppfiles) -LDFLAGS "$(LDFLAGS)" \
 	-CFLAGS "-I$(generated_dir_debug) -include $(model_header_debug)"
 
-TestHarness.sv: CONFIG_FIR
+TestHarness.sv: $(CONFIG_FIR)
 	./firrtl/utils/bin/firrtl -td . -i $(PROJECT).$(CONFIG).fir -X sverilog
 
-CONFIG_FIR:
+$(CONFIG_FIR):
 	sbt -mem 2048 'runMain $(PROJECT).Generator . $(PROJECT) TestHarness $(PROJECT) $(CONFIG)'
 
 clean:
