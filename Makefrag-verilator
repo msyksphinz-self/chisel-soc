@@ -11,8 +11,7 @@ CXXFLAGS := $(CXXFLAGS) -std=c++11 -I$(RISCV)/include
 LDFLAGS := $(LDFLAGS) -L$(RISCV)/lib -Wl,-rpath,$(RISCV)/lib -L$(abspath $(sim_dir)) -lfesvr -lpthread
 JVM_MEMORY ?= 2G
 
-base_dir = $(abspath rocketchip)
-resources := $(base_dir)/src/main/resources
+resources := ./src/main/resources
 csrc := $(abspath verilator_csrc)
 vsrc := $(resources)/vsrc
 sim_dir = .
@@ -36,6 +35,7 @@ VERILATOR_FLAGS := --top-module $(MODEL) \
   -Wno-STMTDLY --x-assign unique \
   -I$(vsrc) \
   -O3 -CFLAGS "$(CXXFLAGS) -DVERILATOR -DTEST_HARNESS=V$(MODEL) -include $(csrc)/verilator.h -include $(generated_dir_debug)/../$(PROJECT).$(CONFIG).plusArgs"
+
 cppfiles = $(addprefix $(csrc)/, $(addsuffix .cpp, $(CXXSRCS)))
 headers = $(wildcard $(csrc)/*.h)
 

@@ -37,12 +37,13 @@ resolvers ++= Seq(
 
 // Provide a managed dependency on X if -DXVersion="" is supplied on the command line.
 val defaultVersions = Map(
-  "chisel3" -> "3.2.+",
+  "chisel3" -> "3.2-SNAPSHOT",
   "chisel-iotesters" -> "1.2.+",
-  "rocketchip" -> "1.2.+",
+  "rocketchip" -> "1.2.0",
   "dsptools" -> "1.1.+",
-  "firrtl" -> "1.4.0-RC3",
+  "firrtl" -> "1.4.0-RC3"
 )
+
 
 libraryDependencies ++= (Seq("chisel3", "chisel-iotesters", "dsptools", "rocketchip", "firrtl").map {
   dep: String => "edu.berkeley.cs" %% dep % sys.props.getOrElse(dep + "Version", defaultVersions(dep)) })
@@ -81,6 +82,8 @@ addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.fu
 addSbtPlugin("org.xerial.sbt" % "sbt-pack" % "0.9.3")
 
 // lazy val rocketchip = RootProject(file("rocket-chip"))
+// lazy val chisel3 = RootProject(file("chisel3"))
 
-// lazy val root = (project in file("."))
-//   .dependsOn(rocketchip)
+lazy val root = (project in file("."))
+//  .dependsOn(rocketchip)
+//  .dependsOn(chisel3)

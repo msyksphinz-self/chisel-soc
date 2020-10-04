@@ -1,6 +1,6 @@
 package freechips.rocketchip.unittest
 
-import Chisel._
+import chisel3._
 import freechips.rocketchip.config._
 import freechips.rocketchip.amba.ahb._
 import freechips.rocketchip.amba.apb._
