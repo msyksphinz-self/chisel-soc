@@ -4,7 +4,7 @@ def scalacOptionsVersion(scalaVersion: String): Seq[String] = {
     //  switch to support our anonymous Bundle definitions:
     //  https://github.com/scala/bug/issues/10047
     CrossVersion.partialVersion(scalaVersion) match {
-      case Some((2, scalaMajor: Long)) if scalaMajor < 12 => Seq()
+      case Some((2, scalaMajor: Int)) if scalaMajor < 12 => Seq()
       case _ => Seq("-Xsource:2.11")
     }
   }
@@ -16,7 +16,7 @@ def javacOptionsVersion(scalaVersion: String): Seq[String] = {
     //  Java 7 compatible code for Scala 2.11
     //  for compatibility with old clients.
     CrossVersion.partialVersion(scalaVersion) match {
-      case Some((2, scalaMajor: Long)) if scalaMajor < 12 =>
+      case Some((2, scalaMajor: Int)) if scalaMajor < 12 =>
         Seq("-source", "1.7", "-target", "1.7")
       case _ =>
         Seq("-source", "1.8", "-target", "1.8")
@@ -37,9 +37,9 @@ resolvers ++= Seq(
 
 // Provide a managed dependency on X if -DXVersion="" is supplied on the command line.
 val defaultVersions = Map(
-  "chisel3" -> "3.2-SNAPSHOT",
+  "chisel3" -> "3.2.+",
   "chisel-iotesters" -> "1.2.+",
-  "rocketchip" -> "1.2.0",
+  "rocketchip" -> "1.2-SNAPSHOT",
   "dsptools" -> "1.1.+",
   "firrtl" -> "1.4.0-RC3"
 )
@@ -79,7 +79,7 @@ scalacOptions ++= scalacOptionsVersion(scalaVersion.value)
 javacOptions  ++= javacOptionsVersion(scalaVersion.value)
 
 addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
-addSbtPlugin("org.xerial.sbt" % "sbt-pack" % "0.9.3")
+// addSbtPlugin("org.xerial.sbt" % "sbt-pack" % "0.9.3")
 
 // lazy val rocketchip = RootProject(file("rocket-chip"))
 // lazy val chisel3 = RootProject(file("chisel3"))

@@ -1,4 +1,8 @@
+export TERM=xterm-color
+
 SBT ?= java -Xmx$(JVM_MEMORY) -Xss8M -XX:MaxPermSize=256M -jar ./sbt-launch.jar
+# SBT ?= java -Xmx$(JVM_MEMORY) -Xss8M -XX:MaxPermSize=256M -jar ./sbt/bin/sbt-launch.jar
+# SBT ?= sbt -mem 2048
 
 PROJ_ROOT = $(shell git rev-parse --show-toplevel)
 
@@ -34,9 +38,11 @@ tilelink-xml: TestHarness.sv
 TestHarness.sv: fir_build
 	./firrtl/utils/bin/firrtl -td $(generated_dir_debug) -i $(generated_dir_debug)/$(PROJECT).$(CONFIG).fir -X sverilog
 
-fir_build:
+fir_build: mkdir_generated_dir
 	$(SBT) 'runMain $(PROJECT).Generator $(generated_dir_debug) core_complex TestHarness $(PROJECT) $(CONFIG)'
 
+mkdir_generated_dir:
+	mkdir -p $(generated_dir) $(generated_dir_debug)
 
 clean:
 	$(RM) -rf test_run_dir target *.v *.fir *.json *.log generated-src-debug *.sv
