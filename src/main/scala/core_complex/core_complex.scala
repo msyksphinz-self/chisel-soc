@@ -1,4 +1,4 @@
-package freechips.rocketchip.unittest
+package core_complex
 
 import chisel3._
 
@@ -47,26 +47,3 @@ class core_complex(ramBeatBytes: Int, txns: Int)(implicit p: Parameters) extends
     }
   }
 }
-
-
-class core_complex_test(ramBeatBytes: Int, txns: Int = 5000, timeout: Int = 500000)(implicit p: Parameters) extends UnitTest(timeout) {
-  val lazy_dut = LazyModule(new core_complex(ramBeatBytes, txns))
-  val dut = Module(lazy_dut.module)
-  ElaborationArtefacts.add("graphml", lazy_dut.graphML)
-}
-
-
-class withcore_complex_test extends Config((site, here, up) => {
-  case UnitTests => (q: Parameters) => {
-    implicit val p = q
-    val txns = 1 * site(TestDurationMultiplier)
-    val timeout = 50000 * site(TestDurationMultiplier)
-    Seq(
-      Module(new core_complex_test(4, txns=15*txns, timeout=timeout))
-    )}
-})
-
-class CoreComplexTestConfig
-    extends Config(new withcore_complex_test ++
-      new WithTestDuration(1) ++
-      new BaseSubsystemConfig)

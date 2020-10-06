@@ -2,6 +2,7 @@ package freechips.rocketchip.tilelink
 
 import chisel3._
 import chisel3.util.HasBlackBoxResource
+import chisel3.util.DecoupledIO
 
 import scala.io.Source
 import java.io._
@@ -18,12 +19,16 @@ import freechips.rocketchip.diplomacy._
 import freechips.rocketchip.diplomaticobjectmodel.logicaltree.{BusMemoryLogicalTreeNode, LogicalModuleTree, LogicalTreeNode}
 import freechips.rocketchip.diplomaticobjectmodel.model.{OMECC, TL_UL}
 
+class debugIO extends Bundle {
+  val addr  = Output(UInt(32.W))
+  val data  = Output(UInt(32.W))
+}
+
 class sim_dtm(implicit p: Parameters) extends BlackBox with HasBlackBoxResource {
   val io = IO(new Bundle {
-    val req   = Output(Bool())
-    val addr  = Output(UInt(32.W))
-    val data  = Output(UInt(32.W))
-    val ready = Input(Bool())
+    val clock = Input(Clock())
+    val reset = Input(Reset())
+    val req = DecoupledIO(new debugIO())
   })
 
   // def connect(tbclk: Clock, tbreset: Bool, dutio: ClockedDMIIO, tbsuccess: Bool) = {

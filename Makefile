@@ -21,7 +21,7 @@ tilelink: TestHarness.sv
 	mkdir -p $(generated_dir_debug)/$(long_name)
 	$(VERILATOR) $(VERILATOR_FLAGS) -Mdir $(generated_dir_debug)/$(long_name) \
 	-o $(abspath $(sim_dir))/$@ $(verilog) $(cppfiles) -LDFLAGS "$(LDFLAGS)" \
-	-CFLAGS "-I$(generated_dir_debug) -include $(model_header_debug)"
+	-CFLAGS "-I$(generated_dir_debug) -include $(generated_dir_debug)"
 	$(MAKE) VM_PARALLEL_BUILDS=1 -C $(generated_dir_debug)/$(long_name) -f V$(MODEL).mk
 	./$@
 
@@ -29,13 +29,13 @@ tilelink-xml: TestHarness.sv
 	mkdir -p $(generated_dir_debug)/$(long_name)
 	$(VERILATOR) $(VERILATOR_FLAGS) --xml-only -Mdir $(generated_dir_debug)/$(long_name) \
 	-o $(abspath $(sim_dir))/$@ $(verilog) $(cppfiles) -LDFLAGS "$(LDFLAGS)" \
-	-CFLAGS "-I$(generated_dir_debug) -include $(model_header_debug)"
+	-CFLAGS "-I$(generated_dir_debug) -include $(generated_dir_debug)"
 
 TestHarness.sv: fir_build
-	./firrtl/utils/bin/firrtl -td . -i $(PROJECT).$(CONFIG).fir -X sverilog
+	./firrtl/utils/bin/firrtl -td $(generated_dir_debug) -i $(generated_dir_debug)/$(PROJECT).$(CONFIG).fir -X sverilog
 
 fir_build:
-	$(SBT) 'runMain $(PROJECT).Generator . $(PROJECT) TestHarness $(PROJECT) $(CONFIG)'
+	$(SBT) 'runMain $(PROJECT).Generator $(generated_dir_debug) core_complex TestHarness $(PROJECT) $(CONFIG)'
 
 
 clean:
