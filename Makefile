@@ -9,7 +9,8 @@ PROJ_ROOT = $(shell git rev-parse --show-toplevel)
 generated_dir = $(abspath ./generated-src)
 generated_dir_debug = $(abspath ./generated-src-debug)
 
-PROJECT ?= freechips.rocketchip.system
+# PROJECT ?= freechips.rocketchip.system
+PROJECT ?= core_complex
 CONFIG  ?= $(PROJECT).DefaultConfig
 
 JAVA_HEAP_SIZE ?= 8G
@@ -35,11 +36,10 @@ tilelink-xml: TestHarness.sv
 	-o $(abspath $(sim_dir))/$@ $(verilog) $(cppfiles) -LDFLAGS "$(LDFLAGS)" \
 	-CFLAGS "-I$(generated_dir_debug) -include $(generated_dir_debug)"
 
-TestHarness.sv: fir_build
-	./firrtl/utils/bin/firrtl -td $(generated_dir_debug) -i $(generated_dir_debug)/$(PROJECT).$(CONFIG).fir -X sverilog
-
-fir_build: mkdir_generated_dir
-	$(SBT) 'runMain $(PROJECT).Generator $(generated_dir_debug) core_complex TestHarness $(PROJECT) $(CONFIG)'
+TestHarness.sv: 
+	$(SBT) 'runMain $(PROJECT).Generator $(generated_dir_debug) core_complex TestHarness $(PROJECT)'
+	
+#	$(SBT) 'runMain $(PROJECT).Generator $(generated_dir_debug) core_complex TestHarness $(PROJECT) $(CONFIG)'
 
 mkdir_generated_dir:
 	mkdir -p $(generated_dir) $(generated_dir_debug)

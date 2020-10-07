@@ -17,7 +17,7 @@ vsrc := $(resources)/vsrc
 sim_dir = .
 model_header_debug = $(generated_dir_debug)/$(long_name)/V$(MODEL).h
 
-verilog = $(abspath $(generated_dir_debug)/TestHarness.sv)
+verilog = $(abspath TestHarness.v)
 MODEL ?= TestHarness
 
 generated_dir_debug = $(abspath ./generated-src-debug)

@@ -19,7 +19,7 @@ class core_complex(ramBeatBytes: Int, txns: Int)(implicit p: Parameters) extends
 
   val ifu    = LazyModule(new ifu("ifu"))
   val xbar   = LazyModule(new TLXbar)
-  val memory = LazyModule(new TLRAM(AddressSet(0x020000000, 0x0ffff), beatBytes = ramBeatBytes))
+  val memory = LazyModule(new TLRAM(AddressSet(0x02000, 0x0fff), beatBytes = ramBeatBytes))
 
   xbar.node := loader.node
   xbar.node := TLDelayer(0.0001) := ifu.node

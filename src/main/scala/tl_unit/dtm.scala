@@ -45,6 +45,6 @@ class sim_dtm(implicit p: Parameters) extends BlackBox with HasBlackBoxResource 
   //   }
   // }
 
-  addResource("sim_dtm.v")
-  addResource("sim_dtm.cc")
+  // addResource("sim_dtm.v")
+  // addResource("sim_dtm.cc")
 }
