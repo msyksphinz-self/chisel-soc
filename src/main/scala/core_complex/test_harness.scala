@@ -29,5 +29,3 @@ class TestHarness()(implicit p: Parameters) extends Module {
 
   io.success := false.B
 }
-
-// class DefaultConfig extends Config(new BaseSubsystemConfig)

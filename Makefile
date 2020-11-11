@@ -22,11 +22,12 @@ export JAVA_ARGS
 
 include Makefrag-verilator
 
-tilelink: TestHarness.sv
+# tilelink: TestHarness.sv
+tilelink:
 	mkdir -p $(generated_dir_debug)/$(long_name)
 	$(VERILATOR) $(VERILATOR_FLAGS) -Mdir $(generated_dir_debug)/$(long_name) \
 	-o $(abspath $(sim_dir))/$@ $(verilog) $(cppfiles) -LDFLAGS "$(LDFLAGS)" \
-	-CFLAGS "-I$(generated_dir_debug) -include $(generated_dir_debug)"
+	-CFLAGS "-I$(generated_dir_debug)"
 	$(MAKE) VM_PARALLEL_BUILDS=1 -C $(generated_dir_debug)/$(long_name) -f V$(MODEL).mk
 	./$@
 
@@ -38,7 +39,7 @@ tilelink-xml: TestHarness.sv
 
 TestHarness.sv: 
 	$(SBT) 'runMain $(PROJECT).Generator $(generated_dir_debug) core_complex TestHarness $(PROJECT)'
-	
+
 #	$(SBT) 'runMain $(PROJECT).Generator $(generated_dir_debug) core_complex TestHarness $(PROJECT) $(CONFIG)'
 
 mkdir_generated_dir:
