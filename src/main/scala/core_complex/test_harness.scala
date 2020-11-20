@@ -3,13 +3,10 @@
 package core_complex
 
 import chisel3._
-import freechips.rocketchip.config.Config
 import freechips.rocketchip.config.Parameters
-import freechips.rocketchip.devices.debug.Debug
 import freechips.rocketchip.diplomacy.LazyModule
-import freechips.rocketchip.util.AsyncResetReg
+import freechips.rocketchip.util.ElaborationArtefacts
 import freechips.rocketchip.tilelink.sim_dtm
-import freechips.rocketchip.subsystem.BaseSubsystemConfig
 
 class TestHarness()(implicit p: Parameters) extends Module {
   val io = IO(new Bundle {
@@ -28,4 +25,6 @@ class TestHarness()(implicit p: Parameters) extends Module {
   dtm.io.req.ready := dut.io.ready
 
   io.success := false.B
+
+  ElaborationArtefacts.add("graphml", ldut.graphML)
 }

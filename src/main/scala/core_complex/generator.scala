@@ -2,15 +2,11 @@
 
 package core_complex
 
-import chisel3._
-import freechips.rocketchip.config.Config
+import java.io.{File, FileWriter}
+
 import freechips.rocketchip.config.Parameters
-import freechips.rocketchip.devices.debug.Debug
-import freechips.rocketchip.diplomacy.LazyModule
-import freechips.rocketchip.util.AsyncResetReg
-import freechips.rocketchip.tilelink.sim_dtm
 import chisel3.Driver
-import freechips.rocketchip.subsystem.BaseSubsystemConfig
+import freechips.rocketchip.util.ElaborationArtefacts
 
 object Generator {
     final def main(args: Array[String]) {
@@ -18,5 +14,11 @@ object Generator {
         val verilog = Driver.emitVerilog(
             new TestHarness()(Parameters.empty)
         )
+        ElaborationArtefacts.files.foreach { case (extension, contents) =>
+            val f = new File(".", "TestHarness." + extension)
+            val fw = new FileWriter(f)
+            fw.write(contents())
+            fw.close
+        }
     }
 }
