@@ -33,6 +33,7 @@ class CoreTop(name: String)(implicit p: Parameters) extends LazyModule {
     inst_out.a.valid := cpu.io.inst_bus.req
     inst_out.a.bits.address := cpu.io.inst_bus.addr
     inst_out.a.bits.opcode := TLMessages.Get
+    inst_out.a.bits.mask := 0xf.U
     inst_out.a.bits.param := 0.U
     cpu.io.inst_bus.ack := inst_out.d.valid
     cpu.io.inst_bus.rddata := inst_out.d.bits.data.asSInt
@@ -40,6 +41,7 @@ class CoreTop(name: String)(implicit p: Parameters) extends LazyModule {
     data_out.a.valid := cpu.io.data_bus.req
     data_out.a.bits.address := cpu.io.data_bus.addr
     data_out.a.bits.opcode := TLMessages.Get
+    data_out.a.bits.mask := 0xf.U
     data_out.a.bits.param := 0.U
     cpu.io.data_bus.ack := data_out.d.valid
     cpu.io.data_bus.rddata := data_out.d.bits.data.asSInt

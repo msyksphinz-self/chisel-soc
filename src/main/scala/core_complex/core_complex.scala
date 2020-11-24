@@ -15,8 +15,8 @@ class core_complex(ramBeatBytes: Int, txns: Int)(implicit p: Parameters) extends
   val memory = LazyModule(new TLRAM(AddressSet(0x02000, 0x0fff), beatBytes = ramBeatBytes))
 
   xbar.node := loader.node
-  xbar.node := TLDelayer(0.0001) := core.inst_node
-  xbar.node := TLDelayer(0.0001) := core.data_node
+  xbar.node := /* TLDelayer(0.0001) := */ core.inst_node
+  xbar.node := /* TLDelayer(0.0001) := */ core.data_node
   memory.node := xbar.node
 
   lazy val module = new LazyModuleImp(this) {

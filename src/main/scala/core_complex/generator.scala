@@ -10,7 +10,6 @@ import freechips.rocketchip.util.ElaborationArtefacts
 
 object Generator {
     final def main(args: Array[String]) {
-        println("Generator.main() started.\n")
         val verilog = Driver.emitVerilog(
             new TestHarness()(Parameters.empty)
         )

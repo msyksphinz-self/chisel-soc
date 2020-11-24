@@ -33,6 +33,10 @@ always_ff @(posedge clock) begin
   req_bits_data_reg <= __debug_req_bits_data;
 end
 
+assign req_valid     = req_valid_reg;
+assign req_bits_addr = req_bits_addr_reg;
+assign req_bits_data = req_bits_data_reg;
+
 int debug_tick_val;
 
 always_ff @(negedge clock) begin

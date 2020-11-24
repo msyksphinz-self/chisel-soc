@@ -1,21 +1,14 @@
 package core_complex
 
 import chisel3._
+import chisel3.util._
 
 import scala.io.Source
 import java.io._
 
 import freechips.rocketchip.config._
-import freechips.rocketchip.amba.ahb._
-import freechips.rocketchip.amba.apb._
-import freechips.rocketchip.amba.axi4._
-import freechips.rocketchip.subsystem.{BaseSubsystemConfig}
-import freechips.rocketchip.devices.tilelink._
 import freechips.rocketchip.tilelink._
-import freechips.rocketchip.util._
 import freechips.rocketchip.diplomacy._
-import freechips.rocketchip.diplomaticobjectmodel.logicaltree.{BusMemoryLogicalTreeNode, LogicalModuleTree, LogicalTreeNode}
-import freechips.rocketchip.diplomaticobjectmodel.model.{OMECC, TL_UL}
 
 class loader(name: String)(implicit p: Parameters) extends LazyModule {
   val node = TLClientNode(Seq(TLClientPortParameters(Seq(TLClientParameters(name = name)))))
@@ -38,10 +31,6 @@ class loader(name: String)(implicit p: Parameters) extends LazyModule {
     val a = out.a
     val d = out.d
 
-    val (_, put_pbits) = edge.Put(0.U, io.addr, 2.U, io.data);
-    a.valid := io.req
-    a.bits  := put_pbits
-
     d.ready := true.B
 
     // Tie off unused channels
@@ -49,9 +38,37 @@ class loader(name: String)(implicit p: Parameters) extends LazyModule {
     out.c.ready := true.B
     out.e.ready := true.B
 
+    val s_init :: s_trans :: Nil = Enum(2)
+    val trans_state = RegInit(s_init)
 
-    // Ready signal to Test Bench
-    io.ready := out.a.ready
+    val reg_a_valid = RegInit(false.B)
+    val reg_a_address = RegNext(io.addr)
+    val reg_a_data = RegNext(io.data)
+
+    switch (trans_state) {
+      is (s_init) {
+        when(io.req) {
+          reg_a_valid := true.B
+          reg_a_address := io.addr
+          reg_a_data := io.data
+          io.ready := false.B
+          trans_state := s_trans
+        }
+      }
+      is (s_trans) {
+        when(out.a.fire) {
+          reg_a_valid := false.B
+          io.ready := true.B
+        }
+      }
+    }
+    out.a.valid := reg_a_valid
+    out.a.bits.address := reg_a_address
+    out.a.bits.data := reg_a_data
+    out.a.bits.opcode := TLMessages.PutFullData
+    out.a.bits.mask := 0xf.U
+    out.a.bits.param := 0.U
+
   }
 }
 

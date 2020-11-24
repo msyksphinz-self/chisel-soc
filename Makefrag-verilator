@@ -36,9 +36,7 @@ VERILATOR_FLAGS := --top-module $(MODEL) \
   -I$(vsrc) \
   -O3 -CFLAGS "$(CXXFLAGS) -DVERILATOR -DTEST_HARNESS=V$(MODEL) -include $(csrc)/verilator.h"
 
-# -include $(generated_dir_debug)/../$(PROJECT).$(CONFIG).plusArgs"
-
-cppfiles = $(addprefix $(csrc)/, $(addsuffix .cpp, $(CXXSRCS)))
+cppfiles = $(addprefix $(csrc)/, $(addsuffix .cpp, $(CXXSRCS))) $(abspath $(resources)/sim_dtm.cc)
 headers = $(wildcard $(csrc)/*.h)
 
 verilator_bin:
