@@ -47,11 +47,14 @@ class loader(name: String)(implicit p: Parameters) extends LazyModule {
 
     switch (trans_state) {
       is (s_init) {
+        io.ready := true.B
+
         when(io.req) {
           reg_a_valid := true.B
           reg_a_address := io.addr
           reg_a_data := io.data
           io.ready := false.B
+
           trans_state := s_trans
         }
       }
@@ -59,6 +62,8 @@ class loader(name: String)(implicit p: Parameters) extends LazyModule {
         when(out.a.fire) {
           reg_a_valid := false.B
           io.ready := true.B
+
+          trans_state := s_init
         }
       }
     }

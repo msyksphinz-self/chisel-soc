@@ -8,7 +8,7 @@ CXX ?= g++
 # CXXSRCS := emulator SimDTM SimJTAG remote_bitbang
 CXXSRCS := main
 CXXFLAGS := $(CXXFLAGS) -std=c++11 -I$(RISCV)/include
-LDFLAGS := $(LDFLAGS) -L$(RISCV)/lib -Wl,-rpath,$(RISCV)/lib -L$(abspath $(sim_dir)) -lfesvr -lpthread
+LDFLAGS := $(LDFLAGS) -L$(RISCV)/lib -Wl,-rpath,$(RISCV)/lib -L$(abspath $(sim_dir)) -lfesvr -lpthread -lbfd
 JVM_MEMORY ?= 2G
 
 resources := ./src/main/resources
@@ -36,7 +36,9 @@ VERILATOR_FLAGS := --top-module $(MODEL) \
   -I$(vsrc) \
   -O3 -CFLAGS "$(CXXFLAGS) -DVERILATOR -DTEST_HARNESS=V$(MODEL) -include $(csrc)/verilator.h"
 
-cppfiles = $(addprefix $(csrc)/, $(addsuffix .cpp, $(CXXSRCS))) $(abspath $(resources)/sim_dtm.cc)
+cppfiles = $(addprefix $(csrc)/, $(addsuffix .cpp, $(CXXSRCS))) $(abspath $(resources)/sim_dtm.cc) \
+         $(abspath $(resources)/mem_body.cpp) $(abspath $(resources)/memory_block.cpp)
+
 headers = $(wildcard $(csrc)/*.h)
 
 verilator_bin:
