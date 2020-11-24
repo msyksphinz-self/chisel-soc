@@ -13,8 +13,11 @@ extern "C" int debug_tick(
   static int data = 0xdead000;
   if (count < 100) {
     *debug_req_valid     = 1;
-    *debug_req_bits_addr = addr ++;
-    *debug_req_bits_data = data ++;
+    *debug_req_bits_addr = addr;
+    *debug_req_bits_data = data;
+
+    addr += 4;
+    data += 4;
 
     count++;
   }

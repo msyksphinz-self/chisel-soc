@@ -67,6 +67,7 @@ class loader(name: String)(implicit p: Parameters) extends LazyModule {
     out.a.bits.data := reg_a_data
     out.a.bits.opcode := TLMessages.PutFullData
     out.a.bits.mask := 0xf.U
+    out.a.bits.size := 2.U
     out.a.bits.param := 0.U
 
   }
