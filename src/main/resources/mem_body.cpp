@@ -181,9 +181,8 @@ void Memory::DumpMemory (FILE *fp)
     for (Addr_t addr = 0; addr < it->second->GetBlockSize(); addr+=64) {
       std::stringstream str;
       str << std::setw(10) << std::hex << std::setfill('0') << (addr + base_addr);
-      fprintf (fp, "%s", str.str().c_str());
+      fprintf (fp, "%s : ", str.str().c_str());
       for (int byte_addr = 64-1; byte_addr >= 0; byte_addr--) {
-      // for (Addr_t byte_addr = 0; byte_addr < 16; byte_addr++) {
         UByte_t data = it->second->ReadByte (static_cast<Addr_t>(addr + byte_addr));
         fprintf (fp, "%02x", data);
       }

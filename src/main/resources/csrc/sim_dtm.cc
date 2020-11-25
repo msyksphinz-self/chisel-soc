@@ -45,10 +45,6 @@ extern "C" int debug_tick(
     int *debug_req_bits_addr,
     int *debug_req_bits_data)
 {
-  static int count = 0;
-  static int addr = 0;
-  static int data = 0xdead000;
-
   if (!elf_loaded) {
     m_memory   = std::unique_ptr<Memory> (new Memory ());
 
@@ -62,17 +58,33 @@ extern "C" int debug_tick(
     elf_loaded = true;
   }
 
-  if (debug_req_ready && count < 100) {
+  auto m_memory_ptr = m_memory.get();
+  static auto m_it = m_memory_ptr->GetIterBegin();
+  static Addr_t addr = 0;
+
+  if (debug_req_ready && (m_it != m_memory_ptr->GetIterEnd() &&
+                          addr < m_it->second->GetBlockSize())) {
+    uint32_t data = 0;
+    for (int i = 0; i < 4; i++) {
+      uint8_t byte = m_it->second->ReadByte (static_cast<Addr_t>(addr + i));
+      data = data << 8 | byte;
+    }
+
     *debug_req_valid     = 1;
-    *debug_req_bits_addr = addr;
+    *debug_req_bits_addr = addr + m_it->second->GetBaseAddr();
+    fprintf(stderr, "addr = %x\n", *debug_req_bits_addr);
     *debug_req_bits_data = data;
 
     addr += 4;
-    data += 4;
-
-    count++;
+    if (addr >= m_it->second->GetBlockSize() && m_it != m_memory_ptr->GetIterEnd()) {
+      fprintf(stderr, "Move to next block\n");
+      m_it ++;
+      addr = 0;
+    }
   } else {
     *debug_req_valid = 0;
+    *debug_req_bits_addr = 0;
+    *debug_req_bits_data = 0;
   }
 
   return 0;

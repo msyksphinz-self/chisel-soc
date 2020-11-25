@@ -27,8 +27,8 @@ export JAVA_ARGS
 chisel-soc: TestHarness.sv
 	mkdir -p $(generated_dir_debug)/$(long_name)
 	$(VERILATOR) $(VERILATOR_FLAGS) -Mdir $(generated_dir_debug)/$(long_name) \
-	-o $(abspath $(sim_dir))/$@ $(verilog) $(cppfiles) -LDFLAGS "$(LDFLAGS)" --trace \
-	-CFLAGS "-I$(generated_dir_debug)/core_complex.$(CONFIG)"
+	-o $(abspath $(sim_dir))/$@ $(verilog) $(cppfiles) -LDFLAGS "$(LDFLAGS) -g" --trace \
+	-CFLAGS "-I$(generated_dir_debug)/core_complex.$(CONFIG) -g"
 	$(MAKE) VM_PARALLEL_BUILDS=1 -C $(generated_dir_debug)/$(long_name) -f V$(MODEL).mk
 	./$@
 

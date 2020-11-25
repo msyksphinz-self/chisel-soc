@@ -59,6 +59,9 @@ class Memory
 
  public:
 
+  auto GetIterBegin() { return m_memory_vec.begin(); }
+  auto GetIterEnd() { return m_memory_vec.end(); }
+
   static Addr_t GetBaseMask () { return BaseMask; }
 
   template <typename AccType> MemResult LoadMemory (Addr_t addr, Byte_t *data);
