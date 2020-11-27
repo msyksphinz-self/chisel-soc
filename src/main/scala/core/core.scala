@@ -28,8 +28,7 @@ class CoreTop(name: String)(implicit p: Parameters) extends LazyModule {
 
     val cpu = Module(new Cpu(new RV64IConfig))
 
-    // cpu.io.run := io.run
-    cpu.io.run := false.B
+    cpu.io.run := io.run
 
     inst_out.a.valid := cpu.io.inst_bus.req
     inst_out.a.bits.address := cpu.io.inst_bus.addr
@@ -37,6 +36,7 @@ class CoreTop(name: String)(implicit p: Parameters) extends LazyModule {
     inst_out.a.bits.mask := 0xf.U
     inst_out.a.bits.size := 0.U
     inst_out.a.bits.param := 0.U
+    inst_out.d.ready := true.B
     cpu.io.inst_bus.ack := inst_out.d.valid
     cpu.io.inst_bus.rddata := inst_out.d.bits.data.asSInt
 
@@ -46,6 +46,7 @@ class CoreTop(name: String)(implicit p: Parameters) extends LazyModule {
     data_out.a.bits.mask := 0xf.U
     data_out.a.bits.size := 0.U
     data_out.a.bits.param := 0.U
+    data_out.d.ready := true.B
     cpu.io.data_bus.ack := data_out.d.valid
     cpu.io.data_bus.rddata := data_out.d.bits.data.asSInt
   }

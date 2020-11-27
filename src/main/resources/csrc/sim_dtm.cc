@@ -62,24 +62,50 @@ extern "C" int debug_tick(
   static auto m_it = m_memory_ptr->GetIterBegin();
   static Addr_t addr = 0;
 
-  if (debug_req_ready && (m_it != m_memory_ptr->GetIterEnd() &&
-                          addr < m_it->second->GetBlockSize())) {
-    uint32_t data = 0;
-    for (int i = 0; i < 4; i++) {
-      uint8_t byte = m_it->second->ReadByte (static_cast<Addr_t>(addr + i));
-      data = data << 8 | byte;
-    }
+  static int state = 0;
 
-    *debug_req_valid     = 1;
-    *debug_req_bits_addr = addr + m_it->second->GetBaseAddr();
-    fprintf(stderr, "addr = %x\n", *debug_req_bits_addr);
-    *debug_req_bits_data = data;
+  if (debug_req_ready) {
+    switch (state) {
+      case 0 : {
+        if (m_it != m_memory_ptr->GetIterEnd() &&
+            addr < m_it->second->GetBlockSize()) {
+          uint32_t data = 0;
+          for (int i = 0; i < 4; i++) {
+            uint8_t byte = m_it->second->ReadByte (static_cast<Addr_t>(addr + i));
+            data = byte << (i * 8) | data;
+          }
 
-    addr += 4;
-    if (addr >= m_it->second->GetBlockSize() && m_it != m_memory_ptr->GetIterEnd()) {
-      fprintf(stderr, "Move to next block\n");
-      m_it ++;
-      addr = 0;
+          *debug_req_valid     = 1;
+          *debug_req_bits_addr = addr + m_it->second->GetBaseAddr();
+          *debug_req_bits_data = data;
+          fprintf(stderr, "ELF Loading ... Addr = %08x, Data = %08x\n",
+                  *debug_req_bits_addr,
+                  *debug_req_bits_data);
+
+          addr += 4;
+          if (addr >= m_it->second->GetBlockSize() && m_it != m_memory_ptr->GetIterEnd()) {
+            m_it ++;
+            addr = 0;
+          }
+        } else if (m_it == m_memory_ptr->GetIterEnd()) {
+          state = 1;
+        }
+        break;
+      }
+      case 1 : {
+        *debug_req_valid     = 1;
+        *debug_req_bits_addr = 0x20000000;
+        *debug_req_bits_data = 1;
+
+        state = 2;
+
+        break;
+      }
+      default: {
+        *debug_req_valid = 0;
+        *debug_req_bits_addr = 0;
+        *debug_req_bits_data = 0;
+      }
     }
   } else {
     *debug_req_valid = 0;

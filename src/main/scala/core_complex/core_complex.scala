@@ -12,7 +12,7 @@ class core_complex(ramBeatBytes: Int, txns: Int)(implicit p: Parameters) extends
   // val ifu    = LazyModule(new ifu("ifu"))
   val core   = LazyModule(new CoreTop("core"))
   val xbar   = LazyModule(new TLXbar)
-  val memory = LazyModule(new TLRAM(AddressSet(0x0000, 0x0fff), beatBytes = ramBeatBytes))
+  val memory = LazyModule(new TLRAM(AddressSet(0x80000000L, 0x0fff), beatBytes = ramBeatBytes))
 
   xbar.node := loader.node
   xbar.node := /* TLDelayer(0.0001) := */ core.inst_node
@@ -27,13 +27,15 @@ class core_complex(ramBeatBytes: Int, txns: Int)(implicit p: Parameters) extends
       val ready = Output(Bool())
     })
 
-    loader.module.io.req  := io.req
+    loader.module.io.req  := io.req && (io.addr =/= 0x20000000.U)
     loader.module.io.addr := io.addr
     loader.module.io.data := io.data
     io.ready := loader.module.io.ready
 
-    // TLPatternPusher
-    // ifu.module.io.run := true.B
+    // CPU Core Contorl
+    val cpu_run = RegInit(false.B)
+    cpu_run := Mux(io.req && (io.addr === 0x20000000.U), io.data(0), cpu_run)
+    core.module.io.run := cpu_run
 
     // io.finished := ifu.module.io.done
     // when (ifu.module.io.error) {

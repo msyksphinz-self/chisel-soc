@@ -10,7 +10,7 @@ abstract class RVConfig()
 case class RV64IConfig() extends RVConfig
 {
   override val xlen = 64
-  override val bus_width = 16
+  override val bus_width = 32
   override val debug = true
 }
 
@@ -18,6 +18,6 @@ case class RV64IConfig() extends RVConfig
 case class RV64ISynth() extends RVConfig
 {
   override val xlen = 64
-  override val bus_width = 16
+  override val bus_width = 32
   override val debug = false
 }

@@ -20,7 +20,7 @@ int main(int argc, char **argv, char **env) {
   // VerilatedVcdC* tfp = new VerilatedVcdC;
   VerilatedFstC* tfp = new VerilatedFstC;
 
-  vluint64_t sim_time = 200000;
+  vluint64_t sim_time = 100000;
 
   top->trace(tfp, 99);  // Trace 99 levels of hierarchy
   tfp->open("simx.fst");

@@ -66,7 +66,6 @@ class CpuIo [Conf <: RVConfig](conf: Conf) extends Bundle {
   val dbg_monitor = new CpuDebugMonitor(conf)
 }
 
-
 class CpuTop [Conf <: RVConfig](conf: Conf) extends Module {
   val io = IO (new CpuTopIo(conf))
 
@@ -85,7 +84,6 @@ class CpuTop [Conf <: RVConfig](conf: Conf) extends Module {
   io.dbg_monitor <> cpu.io.dbg_monitor
 }
 
-
 class Cpu [Conf <: RVConfig](conf: Conf) extends Module {
   val io = IO (new CpuIo(conf))
 
@@ -98,7 +96,7 @@ class Cpu [Conf <: RVConfig](conf: Conf) extends Module {
   val u_mem_sext = Module (new SExt(conf))
   val u_csrfile  = Module (new CsrFile(conf))
 
-  val if_inst_addr = RegInit(0.U(conf.bus_width.W))
+  val if_inst_addr = RegInit(0x80000000L.U(conf.bus_width.W))
   val if_inst_en   = RegInit(false.B)
 
   // Get Instruction
