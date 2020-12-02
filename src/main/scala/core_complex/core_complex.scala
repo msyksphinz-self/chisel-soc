@@ -14,7 +14,7 @@ class core_complex[Conf <: RVConfig] (conf: Conf, ramBeatBytes: Int, txns: Int)(
   val core0   = LazyModule(new CoreTop(conf, 0, "core0"))
   val core1   = LazyModule(new CoreTop(conf, 1, "core1"))
   val xbar   = LazyModule(new TLXbar)
-  val memory = LazyModule(new TLRAM(AddressSet(0x80000000L, 0x0fff), beatBytes = ramBeatBytes))
+  val memory = LazyModule(new TLRAM(AddressSet(0x80000000L, 0x0ffff), beatBytes = ramBeatBytes))
 
   xbar.node := loader.node
   xbar.node := /* TLDelayer(0.0001) := */ core0.inst_node

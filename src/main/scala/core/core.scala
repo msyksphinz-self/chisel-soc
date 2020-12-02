@@ -36,7 +36,7 @@ class CoreTop [Conf <: RVConfig] (conf: Conf, hartid: Int, name: String)(implici
     inst_out.a.bits.address := cpu.io.inst_bus.addr
     inst_out.a.bits.opcode := TLMessages.Get
     inst_out.a.bits.mask := 0xf.U
-    inst_out.a.bits.size := 0.U
+    inst_out.a.bits.size := 2.U
     inst_out.a.bits.param := 0.U
     inst_out.d.ready := true.B
     cpu.io.inst_bus.ready := inst_out.a.ready
@@ -47,7 +47,7 @@ class CoreTop [Conf <: RVConfig] (conf: Conf, hartid: Int, name: String)(implici
     data_out.a.bits.address := cpu.io.data_bus.addr
     data_out.a.bits.opcode := TLMessages.Get
     data_out.a.bits.mask := 0xf.U
-    data_out.a.bits.size := 0.U
+    data_out.a.bits.size := 2.U
     data_out.a.bits.param := 0.U
     data_out.d.ready := true.B
     cpu.io.data_bus.ack := data_out.d.valid
