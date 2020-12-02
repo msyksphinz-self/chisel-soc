@@ -8,6 +8,12 @@ import DecodeConsts._
 
 
 class CpuDebugMonitor [Conf <: RVConfig](conf: Conf) extends Bundle {
+  override def cloneType: this.type =
+    new CpuDebugMonitor(conf).asInstanceOf[this.type]
+
+  val hart_id = Output(UInt())
+  val valid = Output(Bool())
+
   val inst_fetch_req    = if (conf.debug == true) Output(Bool())                 else Output(UInt(0.W))
   val inst_fetch_addr   = if (conf.debug == true) Output(UInt(conf.bus_width.W)) else Output(UInt(0.W))
   val inst_fetch_ack    = if (conf.debug == true) Output(Bool())                 else Output(UInt(0.W))
@@ -66,12 +72,12 @@ class CpuIo [Conf <: RVConfig](conf: Conf) extends Bundle {
   val dbg_monitor = new CpuDebugMonitor(conf)
 }
 
-class CpuTop [Conf <: RVConfig](conf: Conf) extends Module {
+class CpuTop [Conf <: RVConfig](hart_id: Int, conf: Conf) extends Module {
   val io = IO (new CpuTopIo(conf))
 
   val memory = Module (new CpuMemory(conf))
 
-  val cpu    = Module(new Cpu(conf))
+  val cpu    = Module(new Cpu(conf, hart_id))
 
   cpu.io.run       := io.run
 
@@ -84,7 +90,7 @@ class CpuTop [Conf <: RVConfig](conf: Conf) extends Module {
   io.dbg_monitor <> cpu.io.dbg_monitor
 }
 
-class Cpu [Conf <: RVConfig](conf: Conf) extends Module {
+class Cpu [Conf <: RVConfig](conf: Conf, hart_id: Int) extends Module {
   val io = IO (new CpuIo(conf))
 
   val cycle = RegInit(0.U(32.W))
@@ -225,6 +231,8 @@ class Cpu [Conf <: RVConfig](conf: Conf) extends Module {
   val wb_ctrl_mem_cmd  = RegNext (mem_ctrl_mem_cmd)
   val wb_ctrl_mem_type = RegNext (mem_ctrl_mem_type)
 
+  val r_wait_ack = RegInit(false.B)
+
   if_inst_en := io.run
 
   if_inst_addr := MuxCase (if_inst_addr, Array (
@@ -233,7 +241,7 @@ class Cpu [Conf <: RVConfig](conf: Conf) extends Module {
     (ex_inst_valid & ex_br_jump)  -> (ex_inst_addr + ex_imm_b_sext),
     (ex_inst_valid & ex_mret_en)  -> u_csrfile.io.mepc,
     (ex_inst_valid & ex_ecall_en) -> u_csrfile.io.mtvec,
-    (if_inst_en & !dec_stall_en)  -> (if_inst_addr + 4.U)
+    (if_inst_en & io.inst_bus.ack & r_wait_ack & !dec_stall_en)  -> (if_inst_addr + 4.U)
   ))
 
   // if (conf.debug == true) {
@@ -253,8 +261,13 @@ class Cpu [Conf <: RVConfig](conf: Conf) extends Module {
   //     printf("%d : ECAL is enable %x, %x\n", cycle, dec_rdata_op0.asUInt, if_inst_addr)
   //   }
   // }
+  when (io.inst_bus.req & io.inst_bus.ready) {
+    r_wait_ack := true.B
+  } .elsewhen (io.inst_bus.ack) {
+    r_wait_ack := io.inst_bus.req & io.inst_bus.ready
+  }
 
-  io.inst_bus.req  := if_inst_en & !(ex_jump_en | dec_stall_en)
+  io.inst_bus.req  := if_inst_en & !r_wait_ack & !(ex_jump_en | dec_stall_en)
   io.inst_bus.addr := if_inst_addr
 
   dec_inst_data := io.inst_bus.rddata.asUInt
@@ -371,6 +384,9 @@ class Cpu [Conf <: RVConfig](conf: Conf) extends Module {
     ))
 
     /* Debug-Port */
+    io.dbg_monitor.hart_id := hart_id.U
+    io.dbg_monitor.valid := io.run
+  
     io.dbg_monitor.inst_fetch_req    := io.inst_bus.req
     io.dbg_monitor.inst_fetch_addr   := io.inst_bus.addr
     io.dbg_monitor.inst_fetch_ack    := io.inst_bus.ack
@@ -432,5 +448,5 @@ class SExt [Conf <: RVConfig](conf: Conf) extends Module {
 
 
 object CpuTop extends App {
-  chisel3.Driver.execute(args, () => new CpuTop(new RV64ISynth))
+  chisel3.Driver.execute(args, () => new CpuTop(0, new RV64ISynth))
 }

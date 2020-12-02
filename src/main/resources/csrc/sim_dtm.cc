@@ -101,6 +101,15 @@ extern "C" int debug_tick(
 
         break;
       }
+      case 2 : {
+        *debug_req_valid     = 1;
+        *debug_req_bits_addr = 0x20000004;
+        *debug_req_bits_data = 1;
+
+        state = 3;
+
+        break;
+      }
       default: {
         *debug_req_valid = 0;
         *debug_req_bits_addr = 0;

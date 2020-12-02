@@ -19,6 +19,7 @@ class InstBus [Conf <: RVConfig](conf: Conf) extends Bundle {
     new InstBus(conf).asInstanceOf[this.type]
 
   val req    = Output(Bool())
+  val ready  = Input(Bool())
   val addr   = Output(UInt(conf.bus_width.W))
 
   val ack    = Input(Bool())
