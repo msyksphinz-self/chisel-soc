@@ -3,8 +3,8 @@ package cpu
 import chisel3._
 import chisel3.util._
 import chisel3.Bool
-
 import DecodeConsts._
+import chisel3.experimental.ChiselEnum
 
 
 class CpuDebugMonitor [Conf <: RVConfig](conf: Conf) extends Bundle {
@@ -103,7 +103,7 @@ class Cpu [Conf <: RVConfig](conf: Conf, hart_id: Int) extends Module {
   val u_csrfile  = Module (new CsrFile(conf))
 
   val if_inst_addr = RegInit(0x80000000L.U(conf.bus_width.W))
-  val if_inst_en   = RegInit(false.B)
+  val if_inst_en   = RegInit(true.B)
 
   // Get Instruction
   val dec_inst_data  = Wire(UInt(32.W))
@@ -118,7 +118,7 @@ class Cpu [Conf <: RVConfig](conf: Conf, hart_id: Int) extends Module {
   val dec_imm_b      = Cat(dec_inst_data(31), dec_inst_data(7), dec_inst_data(30,25), dec_inst_data(11,8))
   val dec_imm_b_sext = Cat(Fill(19,dec_imm_b(11)), dec_imm_b, 0.U)
   val dec_imm_s      = Cat(dec_inst_data(31, 25), dec_inst_data(11,7)).asSInt
-  val dec_imm_j      = Cat(dec_inst_data(31), dec_inst_data(19,12), dec_inst_data(20), dec_inst_data(30,21), 0.U(1.W))
+  val dec_imm_j      = Cat(Fill(11, dec_inst_data(31)), dec_inst_data(31), dec_inst_data(19,12), dec_inst_data(20), dec_inst_data(30,21), 0.U(1.W))
   val dec_imm_j_sext = Cat(Fill(64-21, dec_imm_j(20)), dec_imm_j, 0.U(1.W))
 
   val dec_rdata_op0 = Wire(SInt(conf.xlen.W))
@@ -233,7 +233,51 @@ class Cpu [Conf <: RVConfig](conf: Conf, hart_id: Int) extends Module {
 
   val r_wait_ack = RegInit(false.B)
 
-  if_inst_en := io.run
+  object FetchSM extends ChiselEnum {
+    val sInit, sReqWait, sAckWait, sWaitStall = Value
+  }
+
+  val fetch_sm = RegInit(FetchSM.sInit)
+
+  switch (fetch_sm) {
+    is(FetchSM.sInit) {
+      when(io.run) {
+        fetch_sm := FetchSM.sReqWait
+      }
+    }
+    is(FetchSM.sReqWait) {
+      when(io.inst_bus.req && io.inst_bus.ready) {
+        fetch_sm := FetchSM.sAckWait
+      }
+    }
+    is(FetchSM.sAckWait) {
+      when(io.inst_bus.ack) {
+        when (dec_stall_en) {
+          fetch_sm := FetchSM.sWaitStall
+        } .otherwise {
+          fetch_sm := FetchSM.sReqWait
+        }
+      }
+    }
+    is (FetchSM.sWaitStall) {
+      when (!dec_stall_en) {
+        fetch_sm := FetchSM.sReqWait
+      }
+    }
+  }
+
+  when(if_inst_en & io.inst_bus.req) {
+    when (io.inst_bus.ready) {
+      if_inst_en := io.inst_bus.ack
+    } .otherwise {
+      if_inst_en := false.B
+    }
+  } .elsewhen (io.inst_bus.ack) {
+    if_inst_en := true.B
+  }
+
+  io.inst_bus.req  := (fetch_sm === FetchSM.sReqWait) & !(ex_jump_en | dec_stall_en)
+  io.inst_bus.addr := if_inst_addr
 
   if_inst_addr := MuxCase (if_inst_addr, Array (
     (ex_inst_valid & ex_jalr_en)  -> u_alu.io.res.asUInt,
@@ -241,7 +285,8 @@ class Cpu [Conf <: RVConfig](conf: Conf, hart_id: Int) extends Module {
     (ex_inst_valid & ex_br_jump)  -> (ex_inst_addr + ex_imm_b_sext),
     (ex_inst_valid & ex_mret_en)  -> u_csrfile.io.mepc,
     (ex_inst_valid & ex_ecall_en) -> u_csrfile.io.mtvec,
-    (if_inst_en & io.inst_bus.ack & r_wait_ack & !dec_stall_en)  -> (if_inst_addr + 4.U)
+    ((fetch_sm === FetchSM.sAckWait) && io.inst_bus.ack && !dec_stall_en)  -> (if_inst_addr + 4.U),
+    (fetch_sm === FetchSM.sWaitStall) -> (if_inst_addr + 4.U)
   ))
 
   // if (conf.debug == true) {
@@ -261,18 +306,9 @@ class Cpu [Conf <: RVConfig](conf: Conf, hart_id: Int) extends Module {
   //     printf("%d : ECAL is enable %x, %x\n", cycle, dec_rdata_op0.asUInt, if_inst_addr)
   //   }
   // }
-  when (io.inst_bus.req & io.inst_bus.ready) {
-    r_wait_ack := true.B
-  } .elsewhen (io.inst_bus.ack) {
-    r_wait_ack := io.inst_bus.req & io.inst_bus.ready
-  }
-
-  io.inst_bus.req  := if_inst_en & !r_wait_ack & !(ex_jump_en | dec_stall_en)
-  io.inst_bus.addr := if_inst_addr
-
   dec_inst_data := io.inst_bus.rddata.asUInt
   dec_inst_addr := if_inst_addr
-  when  (if_inst_en & io.inst_bus.ack) {
+  when  ((fetch_sm === FetchSM.sAckWait) & io.inst_bus.ack) {
     dec_inst_valid := Mux(ex_jump_en, false.B, io.inst_bus.ack)
   } .otherwise {
     dec_inst_valid := false.B

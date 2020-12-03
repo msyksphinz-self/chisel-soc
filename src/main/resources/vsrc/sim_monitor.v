@@ -3,7 +3,7 @@ module sim_monitor
    input logic        clock,
    input logic        reset,
 
-   input logic        dbg_hart_id,
+   input logic [1: 0] dbg_hart_id,
    input logic        dbg_valid,
 
    input logic        dbg_inst_fetch_req,
@@ -45,6 +45,18 @@ always_ff @ (posedge clock, posedge reset) begin
         $write("%08x", dbg_inst_fetch_addr);
       end else begin
         $write("        ");
+      end
+
+      if (dbg_inst_fetch_req) begin
+        $write("%08x : ", dbg_inst_fetch_addr);
+      end else begin
+        $write("         : ");
+      end
+
+      if (dbg_inst_fetch_ack) begin
+        $write("%08x ", dbg_inst_fetch_rddata);
+      end else begin
+        $write("         ");
       end
 
       if (dbg_reg_wren) begin
