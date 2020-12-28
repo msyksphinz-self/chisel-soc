@@ -406,7 +406,7 @@ static void load_bitfile (bfd *b, asection *section, PTR data)
 
 static void load_hex (bfd *b, asection *section, Memory *p_memory)
 {
-  int size = bfd_section_size (b, section);
+  int size = bfd_section_size (section);
   std::unique_ptr<Byte_t[]> buf (new Byte_t[size]);
   // fprintf (stderr, "<Allocate %d>\n", size);
 
